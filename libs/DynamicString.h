@@ -271,7 +271,7 @@ uint64_t DS_find_ds(const DS* dsl, const DS* dsr)
     return DS_find_cstr(dsl, (const char*) dsr->data);
 }
 
-uint64_t DS_find_last(const DS* ds, char c)
+uint64_t DS_find_last_ch(const DS* ds, char c)
 {
     for (uint64_t i = ds->len - 1;; i--) {
         if (c == ds->data[i]) {

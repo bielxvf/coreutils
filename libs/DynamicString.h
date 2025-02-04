@@ -1,11 +1,15 @@
 #ifndef DS_H
 #define DS_H
 
-#include <stdint.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <string.h>
-#include <assert.h>
+#include <stdint.h>  // TODO: Can we even get rid of this?
+#include <stdlib.h>  // GOD MODE TODO: Get rid of this
+#include <stdbool.h> // TODO: Get rid of this
+#include <string.h>  // TODO: Get rid of this
+#include <assert.h>  // TODO: Get rid of this
+
+#define NOT_IMPLEMENTED(...) do {                                       \
+                              assert(false && "TODO: Not implemented"); \
+                             } while(false)
 
 typedef struct
 {
@@ -18,6 +22,15 @@ typedef _Float64 float64_t;
 
 /* * * * Declarations * * * */
 
+static inline bool DS_is_alphanumeric(char c);
+static inline bool DS_is_number(char c);
+static inline bool DS_is_letter(char c);
+static inline bool DS_is_upper(char c);
+static inline bool DS_is_lower(char c);
+static inline uint64_t DS_cstrlen(const char* cstr);
+static inline bool DS_cstreq(const char* cstrl, const char* cstrr);
+static inline int64_t DS_cstrcmp(const char* cstrl, const char* cstrr);
+
 static inline DS DS_from_cstr(const char* str);
 static inline DS DS_from_ds(const DS* ds);
 static inline void DS_reserve(DS* ds, const uint64_t new_capacity);
@@ -28,8 +41,8 @@ static inline void DS_shrink_to_fit(DS* ds);
 static inline void DS_push_back_ch(DS* ds, const char c);
 static inline void DS_push_back_cstr(DS* ds, const char* cstr);
 static inline void DS_push_back_n_cstr(DS* ds, const char* cstr, uint64_t n);
-static inline void DS_insert_ch(DS* ds, uint64_t pos, char c);
-static inline void DS_insert_cstr(DS* ds, uint64_t pos, char* cstr);
+static inline void DS_insert_ch(DS* ds, uint64_t pos, const char c);
+static inline void DS_insert_cstr(DS* ds, uint64_t pos, const char* cstr);
 static inline void DS_insert_ds(DS* ds, uint64_t pos, const DS* dsubstr);
 static inline const char* DS_to_cstr(const DS* cds);
 static inline int64_t DS_to_i64(const DS* cds);
@@ -38,8 +51,10 @@ static inline float64_t DS_to_f64(const DS* cds);
 static inline DS DS_substring(const DS* ds, uint64_t start, uint64_t length);
 static inline DS DS_head(const DS* ds, uint64_t end);
 static inline DS DS_tail(const DS* ds, uint64_t start);
-static inline bool DS_compare_cstr(const DS* dsl, const char* cstr);
-static inline bool DS_compare_ds(const DS* dsl, const DS* dsr);
+static inline bool DS_eq_cstr(const DS* ds, const char* cstr);
+static inline bool DS_eq_ds(const DS* dsl, const DS* dsr);
+static inline int64_t DS_cmp_cstr(const DS* ds, const char* cstr);
+static inline int64_t DS_cmp_ds(const DS* dsl, const DS* dsr);
 static inline bool DS_contains_cstr(const DS* ds, const char* csubstr);
 static inline bool DS_contains_ds(const DS* ds, const DS* dsubstr);
 static inline void DS_trim_leading(DS* ds);
@@ -47,9 +62,12 @@ static inline void DS_trim_trailing(DS* ds);
 static inline void DS_trim(DS* ds);
 static inline void DS_to_lower(DS* ds);
 static inline void DS_to_upper(DS* ds);
-static inline void DS_remove_ch(DS* ds, uint64_t pos);
-static inline void DS_remove_cstr(DS* ds, const char* csubstr);
-static inline void DS_remove_ds(DS* ds, const DS* dsubstr);
+static inline void DS_reverse_case(DS* ds);
+static inline void DS_remove_i(DS* ds, uint64_t pos);
+static inline void DS_remove_n_i(DS* ds, uint64_t pos, uint64_t n);
+static inline void DS_remove_first_ch(DS* ds, char c);
+static inline void DS_remove_first_cstr(DS* ds, const char* csubstr);
+static inline void DS_remove_first_ds(DS* ds, const DS* dsubstr);
 static inline DS* DS_split_ch(const DS* ds, char delim, uint64_t* count);
 static inline uint64_t DS_find_ch(const DS* ds, char c);
 static inline uint64_t DS_find_cstr(const DS* ds, const char* cstr);
@@ -57,15 +75,69 @@ static inline uint64_t DS_find_ds(const DS* dsl, const DS* dsr);
 static inline uint64_t DS_find_last_ch(const DS* ds, char c);
 static inline uint64_t DS_find_last_cstr(const DS* ds, const char* cstr);
 static inline uint64_t DS_find_last_ds(const DS* dsl, const DS* dsr);
+static inline char DS_pop_ch(DS* ds);
+static inline char DS_pop_back_ch(DS* ds);
 
 
 /* * * * Implementations * * * */
+
+static inline DS_is_alphanumeric(char c)
+{
+    return DS_is_number(c) || DS_is_letter(c);
+}
+
+static inline DS_is_number(char c)
+{
+    return c >= '0' && c <= '9';
+}
+
+static inline DS_is_letter(char c)
+{
+    return DS_is_upper(c) || DS_is_lower(c);
+}
+
+static inline
+bool DS_is_upper(char c)
+{
+    return c >= 'A' && c <= 'Z';
+}
+
+static inline
+bool DS_is_lower(char c)
+{
+    return c >= 'a' && c <= 'z';
+}
+
+static inline
+uint64_t DS_cstrlen(const char* cstr)
+{
+    for (uint64_t i = 0;; i++) {
+        if (cstr[i] == '\0') return i;
+    }
+    return 0;
+}
+
+static inline
+bool DS_cstreq(const char* cstrl, const char* cstrr)
+{
+    uint64_t len = DS_cstrlen(cstrl);
+    if (len != DS_cstrlen(cstrr)) return false;
+    for (uint64_t i = 0; i < len; i++) {
+        if (cstrl[i] != cstrr[i]) return false;
+    }
+    return true;
+}
+
+static inline int64_t DS_cstrcmp(const char* cstrl, const char* cstrr)
+{
+    NOT_IMPLEMENTED(cstrl, cstrr);
+}
 
 static inline
 DS DS_from_cstr(const char* str)
 {
     DS ds;
-    ds.len = strlen(str);
+    ds.len = DS_cstrlen(str);
     ds.capacity = ds.len + 1;
     ds.data = malloc(sizeof(uint8_t) * ds.capacity);
     assert(ds.data != NULL);
@@ -142,7 +214,7 @@ void DS_push_back_ch(DS* ds, const char c)
 static inline
 void DS_push_back_cstr(DS* ds, const char* cstr)
 {
-    uint64_t cstr_len = strlen(cstr);
+    uint64_t cstr_len = DS_cstrlen(cstr);
 
     if (ds->capacity <= ds->len + cstr_len + 1) {
         uint64_t new_capacity = ds->capacity * 2;
@@ -159,7 +231,7 @@ void DS_push_back_cstr(DS* ds, const char* cstr)
 static inline
 void DS_push_back_n_cstr(DS* ds, const char* cstr, uint64_t n)
 {
-    uint64_t cstr_len = strlen(cstr);
+    uint64_t cstr_len = DS_cstrlen(cstr);
 
     if (n > cstr_len) n = cstr_len;
 
@@ -176,30 +248,34 @@ void DS_push_back_n_cstr(DS* ds, const char* cstr, uint64_t n)
 }
 
 static inline
-void DS_insert_ch(DS* ds, uint64_t pos, char c)
+void DS_insert_ch(DS* ds, uint64_t pos, const char c)
 {
+    assert(ds->len >= pos);
     if (ds->capacity <= ds->len + 1) {
         DS_reserve(ds, ds->capacity * 2);
     }
-    memmove(ds->data + pos + 1, ds->data + pos, sizeof(ds->data[0]) * (ds->len - pos));
+    memmove(ds->data + pos + 1, ds->data + pos, ds->len - pos);
     ds->data[pos] = c;
     ds->len++;
 }
 
 static inline
-void DS_insert_cstr(DS* ds, uint64_t pos, char* cstr)
+void DS_insert_cstr(DS* ds, uint64_t pos, const char* cstr)
 {
-    (void) ds; // TODO
-    (void) pos;
-    (void) cstr;
+    assert(ds->len >= pos);
+    uint64_t cstr_len = DS_cstrlen(cstr);
+    DS_reserve(ds, ds->len + cstr_len + 1);
+    memmove(ds->data + pos + cstr_len, ds->data + pos, ds->len - pos);
+    memcpy(ds->data + pos, cstr, cstr_len);
 }
 
 static inline
 void DS_insert_ds(DS* ds, uint64_t pos, const DS* dsubstr)
 {
-    (void) ds; // TODO
-    (void) pos;
-    (void) dsubstr;
+    assert(ds->len >= pos);
+    DS_reserve(ds, ds->len + dsubstr->len + 1);
+    memmove(ds->data + pos + dsubstr->len, ds->data + pos, ds->len - pos);
+    memcpy(ds->data + pos, dsubstr->data, dsubstr->len);
 }
 
 static inline
@@ -244,7 +320,7 @@ uint64_t DS_to_u64(const DS* cds)
             return 0;
         }
         result *= 10;
-        result += (uint64_t) (ds.data[i] - '0');
+        result += (uint64_t) ds.data[i] - '0';
     }
     return result;
 }
@@ -252,8 +328,37 @@ uint64_t DS_to_u64(const DS* cds)
 static inline
 float64_t DS_to_f64(const DS* cds)
 {
-    (void) cds; // TODO
-    return (float64_t) 0.0;
+    DS ds = DS_from_ds(cds);
+    DS_trim(&ds);
+    float64_t result = 0.0;
+    float64_t sign = 1.0;
+    uint64_t start = 0;
+    if (ds.len > 0 && ds.data[0] == '-') {
+        sign = -1.0;
+        start = 1;
+    }
+    if (ds.len > 0 && ds.data[0] == '+') {
+        start = 1;
+    }
+
+    uint64_t dot = 0;
+    for (uint64_t i = 0; i < ds.len; i++) {
+        if (ds.data[i] == '.') {
+            dot = i;
+            break;
+        }
+
+        result *= (float64_t) 10.0;
+        result += (float64_t) ds.data - '\0';
+    }
+
+    float64_t exp = (float64_t) 10.0;
+    for (uint64_t i = dot + 1; i < ds.len; i++) {
+        result += (float64_t) (ds.data[i] - '\0') / exp;
+        exp *= 10.0;
+    }
+
+    return result;
 }
 
 static inline
@@ -288,15 +393,25 @@ DS DS_tail(const DS* ds, uint64_t start)
 }
 
 static inline
-bool DS_compare_cstr(const DS* dsl, const char* cstr)
+bool DS_eq_cstr(const DS* ds, const char* cstr)
 {
-    return strcmp((const char*) dsl->data, cstr) == 0;
+    return DS_cstreq(ds->data, cstr);
 }
 
 static inline
-bool DS_compare_ds(const DS* dsl, const DS* dsr)
+bool DS_eq_ds(const DS* dsl, const DS* dsr)
 {
-    return DS_compare_cstr(dsl, (const char*) dsr->data);
+    return DS_eq_cstr(dsl, (const char*) dsr->data);
+}
+
+static inline int64_t DS_cmp_cstr(const DS* ds, const char* cstr)
+{
+    NOT_IMPLEMENTED(ds, cstr);
+}
+
+static inline int64_t DS_cmp_ds(const DS* dsl, const DS* dsr)
+{
+    NOT_IMPLEMENTED(dsl, dsr);
 }
 
 static inline
@@ -314,49 +429,121 @@ bool DS_contains_ds(const DS* ds, const DS* dsubstr)
 static inline
 void DS_trim_leading(DS* ds)
 {
-    (void) ds; // TODO
+    bool found_alphanum = false;
+    uint64_t last_whitespace = 0;
+    for (uint64_t i = 0; i < ds->len && !found_alphanum; i++) {
+        switch (ds->data[i]) {
+        case ' ':
+        case '\t':
+        case '\v':
+        case '\n':
+        case '\r': {
+            last_whitespace = i;
+        } break;
+        default: {
+            found_alphanum = true;
+        } break;
+        }
+    }
+
+    if (found_alphanum) {
+        memmove(ds->data, ds->data + last_whitespace + 1, ds->len - last_whitespace + 1);
+        ds->len -= last_whitespace;
+    }
 }
 
 static inline
 void DS_trim_trailing(DS* ds)
 {
-    (void) ds; // TODO
+    bool found_alphanum = false;
+    uint64_t last_whitespace = 0;
+    for (uint64_t i = ds->len - 1; !found_alphanum; i--) {
+        switch (ds->data[i]) {
+        case ' ':
+        case '\t':
+        case '\v':
+        case '\n':
+        case '\r': {
+            last_whitespace = i;
+        } break;
+        default:
+            found_alphanum = true;
+            break;
+        }
+
+        if (i == 0) break;
+    }
+
+    if (found_alphanum) {
+        ds->len -= last_whitespace;
+        ds->data[ds->len] = '\0';
+    }
 }
 
 static inline
 void DS_trim(DS* ds)
 {
-    (void) ds; // TODO
+    DS_trim_leading(ds);
+    DS_trim_trailing(ds);
 }
 
 static inline
 void DS_to_lower(DS* ds)
 {
-    (void) ds; // TODO
+    for (uint64_t i = 0; i < ds->len; i++) {
+        if (DS_is_upper(ds->data[i])) {
+            ds->data[i] ^= 0x20;
+        }
+    }
 }
 
 static inline
 void DS_to_upper(DS* ds)
 {
-    (void) ds; // TODO
+    for (uint64_t i = 0; i < ds->len; i++) {
+        if (DS_is_lower(ds->data[i])) {
+            ds->data[i] ^= 0x20;
+        }
+    }
 }
 
-static inline
-void DS_remove_ch(DS* ds, uint64_t pos)
+static inline void DS_reverse_case(DS* ds)
 {
-    (void) ds; // TODO
-    (void) pos;
+    for (uint64_t i = 0; i < ds->len; i++) {
+        if (DS_is_letter(ds->data[i])) {
+            ds->data[i] ^= 0x20;
+        }
+    }
 }
 
 static inline
-void DS_remove_cstr(DS* ds, const char* csubstr)
+void DS_remove_i(DS* ds, uint64_t pos)
 {
-    (void) ds; // TODO
-    (void) csubstr;
+    memmove(ds->data + pos, ds->data + pos + 1, ds->len - pos);
+    ds->len--;
 }
 
 static inline
-void DS_remove_ds(DS* ds, const DS* dsubstr)
+void DS_remove_n_i(DS* ds, uint64_t pos, uint64_t n)
+{
+    assert(n > 0 && (pos + n <= ds->len));
+    memmove(ds->data + pos, ds->data + pos + n, ds->len - pos - n);
+    ds->len -= n;
+}
+
+static inline void DS_remove_first_ch(DS* ds, char c)
+{
+    NOT_IMPLEMENTED(ds, c);
+}
+
+static inline
+void DS_remove_first_cstr(DS* ds, const char* csubstr)
+{
+    NOT_IMPLEMENTED(ds, csubstr);
+}
+
+static inline
+void DS_remove_first_ds(DS* ds, const DS* dsubstr)
 {
     DS_remove_cstr(ds, (const char*) dsubstr->data);
 }
@@ -364,10 +551,7 @@ void DS_remove_ds(DS* ds, const DS* dsubstr)
 static inline
 DS* DS_split_ch(const DS* ds, char delim, uint64_t* count)
 {
-    (void) ds; // TODO
-    (void) delim;
-    (void) count;
-    return NULL;
+    NOT_IMPLEMENTED(ds, delim, count);
 }
 
 static inline
@@ -384,7 +568,7 @@ uint64_t DS_find_ch(const DS* ds, char c)
 static inline
 uint64_t DS_find_cstr(const DS* ds, const char* cstr)
 {
-    uint64_t cstr_len = strlen(cstr);
+    uint64_t cstr_len = DS_cstrlen(cstr);
     if (cstr_len > ds->len) {
         return UINT64_MAX;
     }
@@ -421,7 +605,7 @@ uint64_t DS_find_last_ch(const DS* ds, char c)
 static inline
 uint64_t DS_find_last_cstr(const DS* ds, const char* cstr)
 {
-    uint64_t cstr_len = strlen(cstr);
+    uint64_t cstr_len = DS_cstrlen(cstr);
     if (cstr_len > ds->len) {
         return UINT64_MAX;
     }
@@ -441,6 +625,26 @@ static inline
 uint64_t DS_find_last_ds(const DS* dsl, const DS* dsr)
 {
     return DS_find_last_cstr(dsl, (const char*) dsr->data);
+}
+
+static inline
+char DS_pop_ch(DS* ds)
+{
+    if (ds->len == 0) return '\0';
+    char c = ds->data[0];
+    memmove(ds->data, ds->data + 1, ds->len - 1 == 0 ? 1 : ds->len - 1 );
+    ds->len--;p
+    ds->data[ds->len] = '\0';
+    return c;
+}
+
+static inline
+char DS_pop_back_ch(DS* ds)
+{
+    ds->len--;
+    char c = ds->data[ds->len];
+    ds->data[ds->len] = '\0';
+    return c;
 }
 
 #endif // DS_H

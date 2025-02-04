@@ -114,7 +114,22 @@ int main(int argc, char** argv)
     Args_parse_args(&args, (const uint64_t) argc, (const char**) argv, program_options, 2);
 
     if (program_options[0].is_set) {
-        printf("Help was called\n");
+        printf("Usage: "PROGRAM" [OPTIONS] NAME...\n"
+               "Print NAME with any leading directory components removed.\n"
+               "If specified, also remove a trailing SUFFIX.\n"
+               "\n"
+               "Mandatory arguments to long options are mandatory for short options too.\n"
+               "  -a, --multiple       support multiple arguments and treat each as a NAME\n"
+               "  -s, --suffix=SUFFIX  remove a trailing SUFFIX\n"
+               "  -z, --zero           end each output line with NUL, not newline\n"
+               "  --help        display this help and exit\n"
+               "  --version     output version information and exit\n"
+               "\n"
+               "Examples:\n"
+               "  "PROGRAM" /usr/bin/sort          -> \"sort\"\n"
+               "  "PROGRAM" include/stdio.h .h     -> \"stdio\"\n"
+               "  "PROGRAM" -s .h include/stdio.h  -> \"stdio\"\n"
+               "  "PROGRAM" -a any/str1 any/str2   -> \"str1\" followed by \"str2\"\n");
         return 1;
     }
 

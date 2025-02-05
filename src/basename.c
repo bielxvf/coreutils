@@ -5,6 +5,7 @@
 #include "../libs/DynamicString.h"
 
 #define PROGRAM "basename"
+#define VERSION "0.0.1"
 
 typedef _Float64 float64_t;
 
@@ -55,10 +56,13 @@ void Args_parse_args(Args* args, const uint64_t argc, const char** argv, Option 
     }
 
     for (uint64_t i = 0; i < opt_count; i++) {
-        for (uint64_t j = 0 ; j < args->count; j++) {
-            if (DS_compare_ds(&args->data[j], &options[i].l) || DS_compare_ds(&args->data[j], &options[i].s)) {
+        for (uint64_t j = 1; j < args->count; j++) {
+            if (DS_eq_ds(&args->data[j], &options[i].l) || DS_eq_ds(&args->data[j], &options[i].s)) {
                 options[i].is_set = true;
-                if (options[i].type != ARG_NONE && j + 1 >= args->count) return; // Ignore if flag needs argument and we dont have it
+                if (options[i].type != ARG_NONE && j + 1 >= args->count) {
+                    Args_remove(args, j);
+                    return;
+                }
 
                 switch (options[i].type) {
                 case ARG_INT64: {
@@ -81,7 +85,6 @@ void Args_parse_args(Args* args, const uint64_t argc, const char** argv, Option 
                     // ARG_NONE
                 } break;
                 }
-
                 Args_remove(args, j);
             }
         }
@@ -91,7 +94,8 @@ void Args_parse_args(Args* args, const uint64_t argc, const char** argv, Option 
 int main(int argc, char** argv)
 {
     if (argc < 2) {
-        fprintf(stderr, PROGRAM": missing operand\n");
+        fprintf(stderr, PROGRAM": missing operand\n"
+                        "Try `"PROGRAM" --help`\n");
         return 1;
     }
 
@@ -109,9 +113,29 @@ int main(int argc, char** argv)
             .type = ARG_NONE,
             .is_set = false,
         },
+        {
+            .l = DS_from_cstr("--multiple"),
+            .s = DS_from_cstr("-a"),
+            .type = ARG_NONE,
+            .is_set = false,
+        },
+        {
+            .l = DS_from_cstr("--sufix"),
+            .s = DS_from_cstr("-s"),
+            .type = ARG_CSTR,
+            .is_set = false,
+        },
+        {
+            .l = DS_from_cstr("--zero"),
+            .s = DS_from_cstr("-z"),
+            .type = ARG_NONE,
+            .is_set = false,
+        },
+
     };
+
     Args args;
-    Args_parse_args(&args, (const uint64_t) argc, (const char**) argv, program_options, 2);
+    Args_parse_args(&args, (const uint64_t) argc, (const char**) argv, program_options, 5);
 
     if (program_options[0].is_set) {
         printf("Usage: "PROGRAM" [OPTIONS] NAME...\n"
@@ -120,7 +144,7 @@ int main(int argc, char** argv)
                "\n"
                "Mandatory arguments to long options are mandatory for short options too.\n"
                "  -a, --multiple       support multiple arguments and treat each as a NAME\n"
-               "  -s, --suffix=SUFFIX  remove a trailing SUFFIX\n"
+               "  -s, --suffix SUFFIX  remove a trailing SUFFIX\n"
                "  -z, --zero           end each output line with NUL, not newline\n"
                "  --help        display this help and exit\n"
                "  --version     output version information and exit\n"
@@ -131,6 +155,35 @@ int main(int argc, char** argv)
                "  "PROGRAM" -s .h include/stdio.h  -> \"stdio\"\n"
                "  "PROGRAM" -a any/str1 any/str2   -> \"str1\" followed by \"str2\"\n");
         return 1;
+    }
+
+    if (program_options[1].is_set) {
+        printf(PROGRAM" "VERSION"\n");
+        return 0;
+    }
+
+    if (program_options[2].is_set) {
+        for (uint64_t i = 1; i < args.count; i++) {
+            if (args.data[i].data[args.data[i].len - 1] == '/') {
+                args.data[i].data[args.data[i].len - 1] = '\0';
+                args.data[i].len--;
+            }
+            DS tail = DS_tail(&args.data[i], DS_find_last_ch(&args.data[i], '/') + 1);
+            printf("%s", DS_to_cstr(&tail));
+            if (!program_options[4].is_set) {
+                printf("\n");
+            }
+        }
+    } else {
+        if (args.data[1].data[args.data[1].len - 1] == '/') {
+            args.data[1].data[args.data[1].len - 1] = '\0';
+            args.data[1].len--;
+        }
+        DS tail = DS_tail(&args.data[1], DS_find_last_ch(&args.data[1], '/') + 1);
+        printf("%s", DS_to_cstr(&tail));
+        if (!program_options[4].is_set) {
+            printf("\n");
+        }
     }
 
     return 0;

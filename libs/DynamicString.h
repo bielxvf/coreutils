@@ -7,8 +7,9 @@
 #include <string.h>  // TODO: Get rid of this
 #include <assert.h>  // TODO: Get rid of this
 
-#define NOT_IMPLEMENTED(...) do {                                       \
-                              assert(false && "TODO: Not implemented"); \
+#define NOT_IMPLEMENTED(...) do {                                          \
+                                 assert(false && "TODO: Not implemented"); \
+                                 (void) __VA_ARGS__;\
                              } while(false)
 
 typedef struct
@@ -81,17 +82,20 @@ static inline char DS_pop_back_ch(DS* ds);
 
 /* * * * Implementations * * * */
 
-static inline DS_is_alphanumeric(char c)
+static inline
+bool DS_is_alphanumeric(char c)
 {
     return DS_is_number(c) || DS_is_letter(c);
 }
 
-static inline DS_is_number(char c)
+static inline
+bool DS_is_number(char c)
 {
     return c >= '0' && c <= '9';
 }
 
-static inline DS_is_letter(char c)
+static inline
+bool DS_is_letter(char c)
 {
     return DS_is_upper(c) || DS_is_lower(c);
 }
@@ -342,14 +346,14 @@ float64_t DS_to_f64(const DS* cds)
     }
 
     uint64_t dot = 0;
-    for (uint64_t i = 0; i < ds.len; i++) {
+    for (uint64_t i = start; i < ds.len; i++) {
         if (ds.data[i] == '.') {
             dot = i;
             break;
         }
 
         result *= (float64_t) 10.0;
-        result += (float64_t) ds.data - '\0';
+        result += (float64_t) ds.data[i] - '\0';
     }
 
     float64_t exp = (float64_t) 10.0;
@@ -358,7 +362,7 @@ float64_t DS_to_f64(const DS* cds)
         exp *= 10.0;
     }
 
-    return result;
+    return result * sign;
 }
 
 static inline
@@ -395,7 +399,7 @@ DS DS_tail(const DS* ds, uint64_t start)
 static inline
 bool DS_eq_cstr(const DS* ds, const char* cstr)
 {
-    return DS_cstreq(ds->data, cstr);
+    return DS_cstreq((const char*) ds->data, cstr);
 }
 
 static inline
@@ -545,7 +549,7 @@ void DS_remove_first_cstr(DS* ds, const char* csubstr)
 static inline
 void DS_remove_first_ds(DS* ds, const DS* dsubstr)
 {
-    DS_remove_cstr(ds, (const char*) dsubstr->data);
+    DS_remove_first_cstr(ds, (const char*) dsubstr->data);
 }
 
 static inline
@@ -633,7 +637,7 @@ char DS_pop_ch(DS* ds)
     if (ds->len == 0) return '\0';
     char c = ds->data[0];
     memmove(ds->data, ds->data + 1, ds->len - 1 == 0 ? 1 : ds->len - 1 );
-    ds->len--;p
+    ds->len--;
     ds->data[ds->len] = '\0';
     return c;
 }

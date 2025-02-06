@@ -69,6 +69,9 @@ static inline void DS_remove_n_i(DS* ds, uint64_t pos, uint64_t n);
 static inline void DS_remove_first_ch(DS* ds, char c);
 static inline void DS_remove_first_cstr(DS* ds, const char* csubstr);
 static inline void DS_remove_first_ds(DS* ds, const DS* dsubstr);
+static inline void DS_remove_last_ch(DS* ds, char c);
+static inline void DS_remove_last_cstr(DS* ds, const char* csubstr);
+static inline void DS_remove_last_ds(DS* ds, const DS* dsubstr);
 static inline DS* DS_split_ch(const DS* ds, char delim, uint64_t* count);
 static inline uint64_t DS_find_ch(const DS* ds, char c);
 static inline uint64_t DS_find_cstr(const DS* ds, const char* cstr);
@@ -550,6 +553,21 @@ static inline
 void DS_remove_first_ds(DS* ds, const DS* dsubstr)
 {
     DS_remove_first_cstr(ds, (const char*) dsubstr->data);
+}
+
+static inline void DS_remove_last_ch(DS* ds, char c)
+{
+    NOT_IMPLEMENTED(ds, c);
+}
+
+static inline void DS_remove_last_cstr(DS* ds, const char* csubstr)
+{
+    NOT_IMPLEMENTED(ds, csubstr);
+}
+
+static inline void DS_remove_last_ds(DS* ds, const DS* dsubstr)
+{
+    NOT_IMPLEMENTED(ds, dsubstr);
 }
 
 static inline

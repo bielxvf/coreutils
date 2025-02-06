@@ -4,96 +4,32 @@
 
 #include "../libs/DynamicString.h"
 
+#include "../libs/Args.h"
+
 #define PROGRAM "basename"
 #define VERSION "0.0.1"
 
-typedef _Float64 float64_t;
+#define PATH_SEPARATOR '/'
 
-typedef enum
+void DS_remove_suffix(DS* ds, const char* suffix_cstr)
 {
-    ARG_NONE,
-    ARG_INT64,
-    ARG_UINT64,
-    ARG_F64,
-    ARG_CSTR,
-} Type;
-
-typedef union
-{
-    int64_t _int64;
-    uint64_t _uint64;
-    const char* _cstr;
-    float64_t _float64;
-} Value;
-
-typedef struct
-{
-    DS l;
-    DS s;
-    Type type;
-    Value val;
-    bool is_set;
-} Option;
-
-typedef struct
-{
-    DS* data;
-    uint64_t count;
-} Args;
-
-void Args_remove(Args* args, uint64_t index)
-{
-    DS_free(args->data + index);
-    for (uint64_t i = index; i < args->count; i++) {
-        if (i + 1 >= args->count) break;
-
-        args->data[i] = args->data[i + 1];
-    }
-    args->count--;
+    uint64_t suffix_len = DS_cstrlen(suffix_cstr);
+    uint64_t index = DS_find_last_cstr(ds, suffix_cstr);
+    if (ds->len > index + suffix_len) return; // Substring is not at the end
+    ds->len -= suffix_len;
+    ds->data[ds->len] = '\0';
 }
 
-void Args_parse_args(Args* args, const uint64_t argc, const char** argv, Option options[], uint64_t opt_count)
+void perform_basename(DS* ds)
 {
-    args->count = (uint64_t) argc;
-    args->data = malloc(sizeof(args->data[0]) * args->count);
-    for (uint64_t i = 0; i < args->count; i++) {
-        args->data[i] = DS_from_cstr(argv[i]);
+    if (ds->data[ds->len - 1] == PATH_SEPARATOR) {
+        ds->data[ds->len - 1] = '\0';
+        ds->len--;
     }
-
-    for (uint64_t i = 0; i < opt_count; i++) {
-        for (uint64_t j = 1; j < args->count; j++) {
-            if (DS_eq_ds(&args->data[j], &options[i].l) || DS_eq_ds(&args->data[j], &options[i].s)) {
-                options[i].is_set = true;
-                if (options[i].type != ARG_NONE && j + 1 >= args->count) {
-                    Args_remove(args, j);
-                    return;
-                }
-
-                switch (options[i].type) {
-                case ARG_INT64: {
-                    options[i].val._int64 = DS_to_i64(&args->data[j + 1]);
-                    Args_remove(args, j + 1);
-                } break;
-                case ARG_UINT64: {
-                    options[i].val._uint64 = DS_to_u64(&args->data[j + 1]);
-                    Args_remove(args, j + 1);
-                } break;
-                case ARG_F64: {
-                    options[i].val._float64 = DS_to_f64(&args->data[j + 1]);
-                    Args_remove(args, j + 1);
-                } break;
-                case ARG_CSTR: {
-                    options[i].val._cstr = DS_to_cstr(&args->data[j + 1]);
-                    Args_remove(args, j + 1);
-                } break;
-                default: {
-                    // ARG_NONE
-                } break;
-                }
-                Args_remove(args, j);
-            }
-        }
-    }
+    DS tail = DS_tail(ds, DS_find_last_ch(ds, PATH_SEPARATOR) + 1);
+    DS_free(ds);
+    ds->data = tail.data;
+    ds->len = tail.len;
 }
 
 int main(int argc, char** argv)
@@ -125,7 +61,7 @@ int main(int argc, char** argv)
             .is_set = false,
         },
         {
-            .l = DS_from_cstr("--sufix"),
+            .l = DS_from_cstr("--suffix"),
             .s = DS_from_cstr("-s"),
             .type = ARG_CSTR,
             .is_set = false,
@@ -136,7 +72,6 @@ int main(int argc, char** argv)
             .type = ARG_NONE,
             .is_set = false,
         },
-
     };
 
     Args args;
@@ -167,25 +102,15 @@ int main(int argc, char** argv)
         return 0;
     }
 
-    if (program_options[2].is_set) {
-        for (uint64_t i = 1; i < args.count; i++) {
-            if (args.data[i].data[args.data[i].len - 1] == '/') {
-                args.data[i].data[args.data[i].len - 1] = '\0';
-                args.data[i].len--;
-            }
-            DS tail = DS_tail(&args.data[i], DS_find_last_ch(&args.data[i], '/') + 1);
-            printf("%s", DS_to_cstr(&tail));
-            if (!program_options[4].is_set) {
-                printf("\n");
-            }
+    uint64_t n = args.count;
+    if (!program_options[2].is_set) n = 2;
+
+    for (uint64_t i = 1; i < n; i++) {
+        perform_basename(&args.data[i]);
+        if (program_options[3].is_set) {
+            DS_remove_suffix(&args.data[i], program_options[3].val._cstr);
         }
-    } else {
-        if (args.data[1].data[args.data[1].len - 1] == '/') {
-            args.data[1].data[args.data[1].len - 1] = '\0';
-            args.data[1].len--;
-        }
-        DS tail = DS_tail(&args.data[1], DS_find_last_ch(&args.data[1], '/') + 1);
-        printf("%s", DS_to_cstr(&tail));
+        printf("%s", DS_to_cstr(&args.data[i]));
         if (!program_options[4].is_set) {
             printf("\n");
         }

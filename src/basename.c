@@ -43,7 +43,12 @@ typedef struct
 
 void Args_remove(Args* args, uint64_t index)
 {
-    memmove(args->data + index, args->data + index + 1, args->count - index - 1);
+    DS_free(args->data + index);
+    for (uint64_t i = index; i < args->count; i++) {
+        if (i + 1 >= args->count) break;
+
+        args->data[i] = args->data[i + 1];
+    }
     args->count--;
 }
 
@@ -187,14 +192,4 @@ int main(int argc, char** argv)
     }
 
     return 0;
-    // DS args[argc];
-    // for (uint64_t i = 0; i < (uint64_t) argc; i++) {
-    //     args[i] = DS_from_cstr(argv[i]);
-    // }
-    // TODO FIX: basename "/etc/portage/" should return "portage", not an empty string
-    // for (uint64_t i = 1; i < (uint64_t) argc; i++) {
-    //     DS tail = DS_tail(&args[i], DS_find_last_ch(&args[i], '/') + 1);
-    //     printf("%s\n", DS_as_cstr(&tail));
-    // }
-    // return 0;
 }

@@ -11,15 +11,6 @@
 
 #define PATH_SEPARATOR '/'
 
-void DS_remove_suffix(DS* ds, const char* suffix_cstr)
-{
-    uint64_t suffix_len = DS_cstrlen(suffix_cstr);
-    uint64_t index = DS_find_last_cstr(ds, suffix_cstr);
-    if (ds->len > index + suffix_len) return; // Substring is not at the end
-    ds->len -= suffix_len;
-    ds->data[ds->len] = '\0';
-}
-
 void perform_basename(DS* ds)
 {
     if (ds->data[ds->len - 1] == PATH_SEPARATOR) {
@@ -34,22 +25,23 @@ void perform_basename(DS* ds)
 
 void print_usage()
 {
-    printf("Usage: "PROGRAM" [OPTIONS] NAME...\n"
-    "Print NAME with any leading directory components removed.\n"
-    "If specified, also remove a trailing SUFFIX.\n"
-    "\n"
-    "Mandatory arguments to long options are mandatory for short options too.\n"
-    "  -a, --multiple       support multiple arguments and treat each as a NAME\n"
-    "  -s, --suffix SUFFIX  remove a trailing SUFFIX\n"
-    "  -z, --zero           end each output line with NUL, not newline\n"
-    "  --help        display this help and exit\n"
-    "  --version     output version information and exit\n"
-    "\n"
-    "Examples:\n"
-    "  "PROGRAM" /usr/bin/sort          -> \"sort\"\n"
-    "  "PROGRAM" include/stdio.h .h     -> \"stdio\"\n"
-    "  "PROGRAM" -s .h include/stdio.h  -> \"stdio\"\n"
-    "  "PROGRAM" -a any/str1 any/str2   -> \"str1\" followed by \"str2\"\n");
+    printf(
+    "Usage: "PROGRAM" [OPTIONS] NAME..."                                         "\n"
+    "Print NAME with any leading directory components removed."                  "\n"
+    "If specified, also remove a trailing SUFFIX."                               "\n"
+                                                                                 "\n"
+    "Mandatory arguments to long options are mandatory for short options too."   "\n"
+    "  -a, --multiple       support multiple arguments and treat each as a NAME" "\n"
+    "  -s, --suffix SUFFIX  remove a trailing SUFFIX"                            "\n"
+    "  -z, --zero           end each output line with NUL, not newline"          "\n"
+    "  --help        display this help and exit"                                 "\n"
+    "  --version     output version information and exit"                        "\n"
+                                                                                 "\n"
+    "Examples:"                                                                  "\n"
+    "  "PROGRAM" /usr/bin/sort          -> \"sort\""                             "\n"
+    "  "PROGRAM" -s .h include/stdio.h  -> \"stdio\""                            "\n"
+    "  "PROGRAM" -a any/str1 any/str2   -> \"str1\" followed by \"str2\""        "\n"
+    );
 }
 
 int main(int argc, char** argv)

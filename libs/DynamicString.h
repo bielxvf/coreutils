@@ -81,6 +81,7 @@ static inline uint64_t DS_find_last_cstr(const DS* ds, const char* cstr);
 static inline uint64_t DS_find_last_ds(const DS* dsl, const DS* dsr);
 static inline char DS_pop_ch(DS* ds);
 static inline char DS_pop_back_ch(DS* ds);
+static inline void DS_remove_suffix(DS* ds, const char* suffix_cstr);
 
 
 /* * * * Implementations * * * */
@@ -667,6 +668,16 @@ char DS_pop_back_ch(DS* ds)
     char c = ds->data[ds->len];
     ds->data[ds->len] = '\0';
     return c;
+}
+
+static inline
+void DS_remove_suffix(DS* ds, const char* suffix_cstr)
+{
+    uint64_t suffix_len = DS_cstrlen(suffix_cstr);
+    uint64_t index = DS_find_last_cstr(ds, suffix_cstr);
+    if (ds->len > index + suffix_len) return; // Substring is not at the end
+    ds->len -= suffix_len;
+    ds->data[ds->len] = '\0';
 }
 
 #endif // DS_H

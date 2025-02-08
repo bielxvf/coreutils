@@ -45,6 +45,12 @@ int main(int argc, char** argv)
             .type = ARG_NONE,
             .is_set = false,
         },
+        {
+            .l = DS_from_cstr("--squeeze-blank"),
+            .s = DS_from_cstr("-s"),
+            .type = ARG_NONE,
+            .is_set = false,
+        },
     };
     Args args;
     Args_parse_args(&args, (const uint64_t) argc, (const char**) argv, program_options, sizeof(program_options)/sizeof(program_options[0]));
@@ -78,10 +84,20 @@ int main(int argc, char** argv)
         buffer[file_size] = '\0';
 
         bool was_newline = false;
+        uint64_t newline_count = 0;
         for (uint64_t j = 0; j < file_size; j++) {
             if (program_options[3].is_set && was_newline) {
                 printf("%6lu  ", n);
                 was_newline = false;
+            }
+
+            if (program_options[5].is_set && buffer[j] == '\n') {
+                newline_count++;
+                if (newline_count > 2) {
+                    continue;
+                }
+            } else if (program_options[5].is_set) {
+                newline_count = 0;
             }
 
             if (program_options[4].is_set && buffer[j] == '\n') {

@@ -33,6 +33,12 @@ int main(int argc, char** argv)
             .type = ARG_NONE,
             .is_set = false,
         },
+        {
+            .l = DS_from_cstr("--number"),
+            .s = DS_from_cstr("-n"),
+            .type = ARG_NONE,
+            .is_set = false,
+        },
     };
     Args args;
     Args_parse_args(&args, (const uint64_t) argc, (const char**) argv, program_options, sizeof(program_options)/sizeof(program_options[0]));
@@ -52,6 +58,8 @@ int main(int argc, char** argv)
         printf(PROGRAM" "VERSION"\n");
     }
 
+    uint64_t n = 1;
+
     for (uint64_t i = 1; i < args.count; i++) {
         FILE* file = fopen(DS_to_cstr(&args.data[i]), "rb");
         fseek(file, 0, SEEK_END);
@@ -63,12 +71,22 @@ int main(int argc, char** argv)
         fclose(file);
         buffer[file_size] = '\0';
 
-        // Not sure if we wanna print the null?
-        for (uint64_t j = 0; j < file_size + 1; j++) {
+        bool was_newline = false;
+        for (uint64_t j = 0; j < file_size; j++) {
+            if (program_options[3].is_set && was_newline) {
+                printf("%6lu  ", n);
+                was_newline = false;
+            }
+
             if (program_options[2].is_set && buffer[j] == '\t') {
                 printf("^I");
             } else {
                 printf("%c", buffer[j]);
+            }
+
+            if (program_options[3].is_set && buffer[j] == '\n') {
+                n++;
+                was_newline = true;
             }
         }
 

@@ -86,7 +86,7 @@ int main(int argc, char** argv)
     };
 
     Args args;
-    Args_parse_args(&args, (const uint64_t) argc, (const char**) argv, program_options, 5);
+    Args_parse_args(&args, (const uint64_t) argc, (const char**) argv, program_options, sizeof(program_options)/sizeof(program_options[0]));
 
     if (program_options[0].is_set) {
         print_usage();

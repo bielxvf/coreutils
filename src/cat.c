@@ -27,9 +27,15 @@ int main(int argc, char** argv)
             .type = ARG_NONE,
             .is_set = false,
         },
+        {
+            .l = DS_from_cstr("--show-tabs"),
+            .s = DS_from_cstr("-T"),
+            .type = ARG_NONE,
+            .is_set = false,
+        },
     };
     Args args;
-    Args_parse_args(&args, (const uint64_t) argc, (const char**) argv, program_options, 2);
+    Args_parse_args(&args, (const uint64_t) argc, (const char**) argv, program_options, sizeof(program_options)/sizeof(program_options[0]));
 
     if (argc < 2) {
         // TODO: Read stdin like GNU's cat does
@@ -57,7 +63,14 @@ int main(int argc, char** argv)
         fclose(file);
         buffer[file_size] = '\0';
 
-        printf("%s", buffer);
+        // Not sure if we wanna print the null?
+        for (uint64_t j = 0; j < file_size + 1; j++) {
+            if (program_options[2].is_set && buffer[j] == '\t') {
+                printf("^I");
+            } else {
+                printf("%c", buffer[j]);
+            }
+        }
 
         free(buffer);
     }

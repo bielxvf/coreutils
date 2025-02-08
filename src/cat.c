@@ -39,6 +39,12 @@ int main(int argc, char** argv)
             .type = ARG_NONE,
             .is_set = false,
         },
+        {
+            .l = DS_from_cstr("--show-ends"),
+            .s = DS_from_cstr("-E"),
+            .type = ARG_NONE,
+            .is_set = false,
+        },
     };
     Args args;
     Args_parse_args(&args, (const uint64_t) argc, (const char**) argv, program_options, sizeof(program_options)/sizeof(program_options[0]));
@@ -76,6 +82,10 @@ int main(int argc, char** argv)
             if (program_options[3].is_set && was_newline) {
                 printf("%6lu  ", n);
                 was_newline = false;
+            }
+
+            if (program_options[4].is_set && buffer[j] == '\n') {
+                printf("$");
             }
 
             if (program_options[2].is_set && buffer[j] == '\t') {

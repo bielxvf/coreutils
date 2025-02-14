@@ -61,7 +61,7 @@ void Args_parse_args(Args* args, const uint64_t argc, const char** argv, Option 
 
     for (uint64_t i = 0; i < opt_count; i++) {
         for (uint64_t j = 1; j < args->count; j++) {
-            if (DS_eq_cstr(&args->data[j], "--") {
+            if (DS_eq_cstr(&args->data[j], "--")) {
                 i = opt_count;
                 j = args->count;
             }

@@ -6,6 +6,11 @@
 #define PROGRAM "cp"
 #define VERSION "0.0.1"
 
+void print_help()
+{
+    assert(false && "print_help not implemented");
+}
+
 int main(int argc, char** argv)
 {
     Option program_options[] =
